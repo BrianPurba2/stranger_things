@@ -1,44 +1,47 @@
 <?php
-// Memulai session untuk menyimpan status login
+// 1. Memulai session untuk menyimpan status login
 session_start();
 
-// Menghubungkan ke database (keluar folder 'auth' dulu baru masuk ke 'config')
+// 2. Menghubungkan ke database
 include "../config/koneksi.php";
 
-// Logika pemrosesan form login saat tombol LOGIN ditekan
+// PERBAIKAN: Memastikan nama tombol submit 'login' terbaca dengan benar
 if (isset($_POST['login'])) {
-    $email = mysqli_real_escape_string($koneksi, $_POST['email']);
+    // PERBAIKAN: Mengubah input email menjadi input teks biasa agar sinkron dengan form HTML di bawah
+    $username_or_email = mysqli_real_escape_string($koneksi, $_POST['username_or_email']);
     $password = mysqli_real_escape_string($koneksi, $_POST['password']);
 
-    // Mengambil data user berdasarkan email (Sesuaikan nama tabel & kolom jika berbeda)
-    $query = mysqli_query($koneksi, "SELECT * FROM user WHERE email='$email' AND password='$password'");
+    // Mencari data user berdasarkan username ATAU email (agar fleksibel saat login)
+    $query = mysqli_query($koneksi, "SELECT * FROM user WHERE (username='$username_or_email' OR email='$username_or_email') AND password='$password'");
 
     if (mysqli_num_rows($query) === 1) {
         $data = mysqli_fetch_assoc($query);
 
-        // Menyimpan data login ke dalam session
+        // Menyimpan data login ke dalam session utama
         $_SESSION['username'] = $data['username'];
         $_SESSION['email'] = $data['email'];
 
         // Alihkan halaman ke home.php yang berada di dalam folder user
-        header("Location: ../user/home.php");
+        echo "<script>
+                alert('Login Berhasil! Selamat datang di Hawkins.');
+                window.location.href = '../user/home.php';
+              </script>";
         exit;
     } else {
-        echo "<script>alert('Email atau Password salah! Silakan coba lagi.');</script>";
+        // PERBAIKAN: Menambahkan pesan jika password/username salah agar tidak kosong putih
+        echo "<script>alert('Username/Email atau Password salah! Silakan coba lagi.');</script>";
     }
 }
 ?>
 <!DOCTYPE html>
 <html lang="id">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Login - Stranger Merch Store</title>
-    <!-- Font Roboto untuk teks & Font Benguiat/Serif tebal untuk Logo -->
     <link href="https://googleapis.com" rel="stylesheet">
-    <!-- Font Awesome untuk memanggil Ikon di dalam Input -->
-    <link rel="stylesheet" href="https://cloudflare.com">
-    
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@900&display=swap">
     <style>
         * {
             margin: 0;
@@ -48,9 +51,8 @@ if (isset($_POST['login'])) {
         }
 
         body {
-            /* Latar belakang tema badai merah menggunakan gambar bg register.png Anda */
             background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)),
-                url('../assets/img/bg register.png') no-repeat center center;
+                url('../assets/img/bglogin.png') no-repeat center center;
             background-size: cover;
             min-height: 100vh;
             display: flex;
@@ -60,65 +62,62 @@ if (isset($_POST['login'])) {
             padding: 40px 20px;
             overflow-y: auto;
         }
+        /* Container Utama */
+.stranger-logo-flat-complete {
+    display: flex;
+    flex-direction: column;
+    align-items: center; /* Memaksa semua teks otomatis rata tengah sempurna */
+    background-color: transparent;
+    font-family: 'Georgia', 'Times New Roman', Times, serif; /* Font Serif tebal, tajam, dan universal */
+    user-select: none;
+    padding: 10px 0;
+    width: 100%;
+    max-width: 300px; /* Batasan lebar agar tetap fit dan proporsional */
+    margin: 0 auto;
+}
 
-        /* ==================== STRANGER LOGO STYLE ==================== */
-        .stranger-logo {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            text-transform: uppercase;
-            margin-bottom: 30px;
-            user-select: none;
-        }
+/* BARIS 1: STRANGER */
+.logo-main-title {
+    font-size: 3.6rem; /* Ukuran pas, tidak kebesaran dan tidak kekecilan */
+    color: transparent;
+    -webkit-text-stroke: 1.5px #ff1a1a; /* Garis tepi merah menyala khas */
+    text-shadow: 0 0 5px rgba(255, 26, 26, 0.7);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -1.8px; /* KUNCI UTAMA: Huruf merapat dan bergandengan rapi */
+    line-height: 0.95;
+    position: relative;
+    padding-top: 8px; /* Memberikan ruang untuk garis merah di atasnya */
+    width: 100%;
+    text-align: center;
+}
 
-        .brand-row-1, .brand-row-2 {
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
-            position: relative;
-        }
+/* Garis Merah Panjang Tegas di Atas "STRANGER" */
+.logo-main-title::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 4%; /* Mengatur jarak ujung garis agar sejajar rapi dengan teks */
+    right: 4%;
+    height: 2.5px;
+    background-color: #ff1a1a;
+    box-shadow: 0 0 5px rgba(255, 26, 26, 0.7);
+}
 
-        .giant-char, .normal-char, .giant-char-2, .normal-char-2 {
-            color: transparent;
-            -webkit-text-stroke: 1.8px #ff0000;
-            text-shadow: 0 0 8px rgba(255, 0, 0, 0.6);
-            font-weight: 900;
-            letter-spacing: -1px;
-        }
-
-        .brand-row-1 .giant-char { font-size: 3.8rem; line-height: 0.8; }
-        .brand-row-1 .normal-char { font-size: 2.4rem; line-height: 0.9; margin-top: -1px; }
-
-        /* Garis Atas Logo */
-        .brand-row-1::before {
-            content: "";
-            position: absolute;
-            top: 4px; 
-            left: 12%; 
-            right: 12%;
-            height: 2.5px;
-            background-color: #ff0000;
-            box-shadow: 0 0 6px rgba(255, 0, 0, 0.8);
-        }
-
-        .brand-row-2 { margin-top: -6px; }
-        .brand-row-2 .giant-char-2 { font-size: 3.4rem; line-height: 0.8; }
-        .brand-row-2 .normal-char-2 { font-size: 2.1rem; line-height: 0.9; word-spacing: 6px; }
-
-        /* Garis Samping Kiri Kanan Baris Kedua */
-        .brand-row-2::before, .brand-row-2::after {
-            content: "";
-            position: absolute;
-            top: 5px;
-            width: 18px;
-            height: 2.5px;
-            background-color: #ff0000;
-            box-shadow: 0 0 6px rgba(255, 0, 0, 0.8);
-        }
-        .brand-row-2::before { left: 4%; }
-        .brand-row-2::after { right: 4%; }
-
-
+/* BARIS 2: MERCH STORE */
+.logo-sub-title {
+    font-size: 2.6rem; /* Ukuran sub-text yang proporsional di bawah judul */
+    color: transparent;
+    -webkit-text-stroke: 1.2px #ff1a1a; /* Garis tepi sedikit lebih tipis agar seimbang */
+    text-shadow: 0 0 4px rgba(255, 26, 26, 0.7);
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: -0.8px; /* Merapat tipis agar teks yang panjang tidak meluber keluar */
+    line-height: 1;
+    margin-top: 5px; /* Jarak aman antar baris agar bebas dari tabrakan */
+    width: 100%;
+    text-align: center;
+}
         /* ==================== BOX FORM LOGIN ==================== */
         .login-box {
             width: 100%;
@@ -145,7 +144,6 @@ if (isset($_POST['login'])) {
             margin-bottom: 25px;
         }
 
-        /* Wrapper Input Grup dengan Ikon */
         .input-group {
             position: relative;
             margin-bottom: 18px;
@@ -172,24 +170,17 @@ if (isset($_POST['login'])) {
             padding: 12px 15px 12px 38px;
             background-color: transparent;
             border: 1px solid #333333;
-            border-radius: 20px; /* Membuat input melengkung oval seperti gambar */
+            border-radius: 20px;
             color: #ffffff;
             font-size: 0.85rem;
             outline: none;
             transition: border-color 0.3s;
         }
 
-        /* Khusus input password diberi ruang kanan untuk ikon mata */
-        .input-group input[type="password"], 
-        .input-group input[type="text"].pass-input {
-            padding-right: 38px;
-        }
-
         .input-group input:focus {
             border-color: #ff0000;
         }
 
-        /* Tombol Login */
         .login-btn {
             width: 100%;
             padding: 10px;
@@ -210,7 +201,6 @@ if (isset($_POST['login'])) {
             background-color: #ff0000;
         }
 
-        /* Tautan Bagian Bawah */
         .footer-links {
             margin-top: 25px;
             font-size: 0.75rem;
@@ -226,46 +216,33 @@ if (isset($_POST['login'])) {
         .footer-links a:hover {
             text-decoration: underline;
         }
-
-        .admin-link {
-            display: inline-block;
-            margin-top: 5px;
-        }
     </style>
 </head>
+
 <body>
-
-    <!-- LOGO STRANGER MERCH STORE -->
-    <div class="stranger-logo">
-        <div class="brand-row-1">
-            <span class="giant-char">S</span>
-            <span class="normal-char">tranger</span>
-            <span class="giant-char">R</span>
-        </div>
-        <div class="brand-row-2">
-            <span class="giant-char-2">M</span>
-            <span class="normal-char-2">erch store</span>
-            <span class="giant-char-2">E</span>
-        </div>
-    </div>
-
+    
+<div class="stranger-logo-flat-complete">
+    <div class="logo-main-title">Stranger</div>
+    <div class="logo-sub-title">Merch Store</div>
+</div>
     <!-- BOX FORM LOGIN -->
     <div class="login-box">
         <h2>LOGIN</h2>
         <p class="subtitle">Welcome Back to Hawkins</p>
 
+        <!-- PERBAIKAN: Memastikan form melempar data menggunakan POST ke file ini sendiri -->
         <form action="" method="POST">
-            <!-- Input Email -->
+            <!-- Input Username / Email -->
             <div class="input-group">
                 <i class="fa-regular fa-user"></i>
-                <input type="email" name="email" placeholder="Email" required>
+                <!-- PERBAIKAN: Menyamakan nama input 'username_or_email' dengan variabel PHP di atas -->
+                <input type="text" name="username_or_email" placeholder="Username atau Email" required>
             </div>
 
             <!-- Input Password -->
             <div class="input-group">
                 <i class="fa-solid fa-lock"></i>
-                <input type="password" name="password" id="password" class="pass-input" placeholder="Password" required>
-                <!-- Ikon Mata untuk Intip Password -->
+                <input type="password" name="password" id="password" placeholder="Password" required>
                 <i class="fa-regular fa-eye-slash toggle-password" onclick="togglePass()"></i>
             </div>
 
@@ -273,14 +250,13 @@ if (isset($_POST['login'])) {
             <button type="submit" name="login" class="login-btn">Login</button>
         </form>
 
-        <!-- Tautan Navigasi Bawah -->
         <div class="footer-links">
-            <p>Belum punya akun? Daftar <a href="register.php">di sini</a></p>
-            <a href="../admin/login_admin.php" class="admin-link">Masuk sebagai <span style="font-weight: bold;">ADMIN</span></a>
+            <p>Belum punya akun? <a href="registrasi.php">Daftar di sini</a></p>
+            <a href="../admin/login_admin.php" style="display:inline-block; margin-top:10px;">Masuk sebagai <span
+                    style="font-weight: bold;">ADMIN</span></a>
         </div>
     </div>
 
-    <!-- Script JavaScript untuk Fungsi Klik Lihat Password -->
     <script>
         function togglePass() {
             var x = document.getElementById("password");
@@ -298,4 +274,5 @@ if (isset($_POST['login'])) {
     </script>
 
 </body>
+
 </html>

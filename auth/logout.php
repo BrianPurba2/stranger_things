@@ -1,11 +1,11 @@
 <?php
-// 1. Wajib memulai session sebelum bisa menghapusnya
+// 1. Jalankan session
 session_start();
 
-// 2. Mengosongkan semua variabel session yang tersimpan
+// 2. Hapus semua data session yang tersimpan
 $_SESSION = array();
 
-// 3. Menghancurkan seluruh session yang aktif di sistem browser
+// 3. Hancurkan session dari server
 if (ini_get("session.use_cookies")) {
     $params = session_get_cookie_params();
     setcookie(
@@ -20,10 +20,7 @@ if (ini_get("session.use_cookies")) {
 }
 session_destroy();
 
-// 4. Setelah bersih, alihkan user kembali ke halaman Login dengan pesan pop-up
-echo "<script>
-        alert('Anda telah berhasil keluar dari Hawkins Crew!');
-        window.location.href = 'login.php';
-      </script>";
+// 4. Lempar kembali user langsung ke halaman login utama
+header("location: login.php");
 exit;
 ?>

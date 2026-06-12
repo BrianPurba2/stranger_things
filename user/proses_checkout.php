@@ -20,7 +20,9 @@ if (!isset($_SESSION['cart']) || empty($_SESSION['cart']) || !isset($_POST['alam
 $username = $_SESSION['username'];
 $alamat = mysqli_real_escape_string($koneksi, $_POST['alamat']);
 $pembayaran = mysqli_real_escape_string($koneksi, $_POST['pembayaran']);
-$ongkir = 20000;
+$ongkir = isset($_POST['ongkir'])
+    ? (int) $_POST['ongkir']
+    : 0;
 $subtotal = 0;
 
 // Hitung ulang subtotal demi keamanan data sebelum disimpan

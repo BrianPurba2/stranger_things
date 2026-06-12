@@ -12,11 +12,11 @@ if (!isset($_SESSION['username'])) {
 include "../config/koneksi.php";
 
 // 4. Tangkap parameter kategori dari URL. Jika tidak ada, default-nya menampilkan 'tshirt'
-$kategori_aktif = isset($_GET['kategori']) ? mysqli_real_escape_string($koneksi, $_GET['kategori']) : 'tshirt';
+$kategori_aktif = isset($_GET['kategori']) ? mysqli_real_escape_string($koneksi, $_GET['kategori']) : 't-shirt';
 
 // 5. Konversi kata kunci URL menjadi teks judul halaman yang rapi
 $judul_halaman = "";
-if ($kategori_aktif == 'tshirt') $judul_halaman = "T-SHIRT";
+if ($kategori_aktif == 't-shirt') $judul_halaman = "T-SHIRT";
 elseif ($kategori_aktif == 'hoodie') $judul_halaman = "HOODIE";
 elseif ($kategori_aktif == 'mug') $judul_halaman = "MUG";
 elseif ($kategori_aktif == 'topi') $judul_halaman = "TOPI";
@@ -61,14 +61,15 @@ elseif ($kategori_aktif == 'topi') $judul_halaman = "TOPI";
             border-bottom: 1px solid #1a1a1a;
             margin-bottom: 30px;
         }
-
         .mini-logo {
-            color: #ff0000;
-            font-weight: 900;
-            font-size: 1.2rem;
-            line-height: 1;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+           color: #ff2a00;
+           font-family: 'Cinzel Decorative', Georgia, serif;
+           font-size: 26px;
+           font-weight: 900;
+           line-height: 0.9;
+           text-transform: uppercase;
+           letter-spacing: 0.5px;
+           -webkit-text-stroke: 0.5px #000;
         }
 
         nav ul {
@@ -263,6 +264,91 @@ elseif ($kategori_aktif == 'topi') $judul_halaman = "TOPI";
         .back-btn:hover {
             color: #ff0000;
         }
+
+        /* Container Utama Menu Profil */
+        .user-profile-nav {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .profile-trigger {
+            color: #ffffff;
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .profile-trigger:hover {
+            background-color: #1a1a1e;
+        }
+
+        /* Kotak Dropdown Pilihan Menu Akun */
+        .profile-dropdown {
+            display: none; /* Tersembunyi secara default */
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: #1a1a1e;
+            min-width: 160px;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.6);
+            z-index: 9999;
+            padding: 5px 0;
+            margin-top: 5px;
+        }
+
+        /* Memunculkan dropdown saat teks nama didekati kursor */
+        .user-profile-nav:hover .profile-dropdown {
+            display: block;
+        }
+
+        /* Gaya Teks di Dalam Dropdown */
+        .dropdown-header {
+            padding: 8px 15px;
+            font-size: 11px;
+            color: #71717a;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .dropdown-link {
+            color: #ffffff;
+            padding: 10px 15px;
+            text-decoration: none;
+            display: block;
+            font-size: 13px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .dropdown-link:hover {
+            background-color: #2e2e35;
+            color: #ff4a1c;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: #3f3f46;
+            margin: 5px 0;
+        }
+
+        .text-danger {
+            color: #ff4444 !important;
+        }
+
+        .nav-right-group {
+           display: flex;
+           align-items: center;
+           gap: 20px;
+           font-size: 0.9rem;
+        }
+        cart-icon {
+           text-decoration: none;
+           color: #fff;
+           font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -279,10 +365,24 @@ elseif ($kategori_aktif == 'topi') $judul_halaman = "TOPI";
                 <li><a href="riwayat.php">RIWAYAT PEMESANAN</a></li>
             </ul>
         </nav>
-        <div class="user-menu">
+        <div class="nav-right-group">
             <a href="cart.php" class="cart-icon">🛒</a>
-            <span>👤 Hi, <?php echo htmlspecialchars($_SESSION['username']); ?> ▼</span>
-        </div>
+            <div class="user-profile-nav">
+           <!-- Teks sapaan yang ada ikon profilnya -->
+           <div class="profile-trigger">
+               👤 &nbsp; Hi, <?php echo $_SESSION['username']; ?>
+           </div>
+
+           <!-- Menu Pilihan Akun (Muncul Saat Di-hover/Disentuh) -->
+           <div class="profile-dropdown">
+               <div class="dropdown-header">Beralih Akun:</div>
+               <a href="../auth/login.php" class="dropdown-link">▶ Pelanggan / User</a>
+               <a href="../admin/login_admin.php" class="dropdown-link">▶ Halaman Admin</a>
+               <div class="dropdown-divider"></div>
+               <a href="../auth/logout.php" class="dropdown-link text-danger">🚪 Keluar (Logout)</a>
+           </div>
+       </div>
+    
     </header>
 
     <!-- JUDUL KATEGORI DI TENGAH -->
@@ -298,7 +398,7 @@ elseif ($kategori_aktif == 'topi') $judul_halaman = "TOPI";
             <div class="sidebar-title">KATEGORI</div>
             <ul class="sidebar-menu">
                 <!-- Class 'active' akan berpindah otomatis berdasar parameter URL -->
-                <li><a href="produk.php?kategori=tshirt" class="<?php echo ($kategori_aktif == 'tshirt') ? 'active' : ''; ?>">T-Shirt</a></li>
+                <li><a href="produk.php?kategori=t-shirt" class="<?php echo ($kategori_aktif == 't-shirt') ? 'active' : ''; ?>">T-Shirt</a></li>
                 <li><a href="produk.php?kategori=hoodie" class="<?php echo ($kategori_aktif == 'hoodie') ? 'active' : ''; ?>">Hoodie</a></li>
                 <li><a href="produk.php?kategori=mug" class="<?php echo ($kategori_aktif == 'mug') ? 'active' : ''; ?>">Mug</a></li>
                 <li><a href="produk.php?kategori=topi" class="<?php echo ($kategori_aktif == 'topi') ? 'active' : ''; ?>">Topi</a></li>
@@ -307,21 +407,46 @@ elseif ($kategori_aktif == 'topi') $judul_halaman = "TOPI";
 
         <!-- AREA KONTEN PRODUK -->
         <div class="products-area">
-            <div class="products-grid">
-                
-                <?php
-                // Mengambil produk berdasarkan kategori yang sedang dipilih di URL
-                // Catatan: Pastikan kolom kategori di tabel database Anda diisi dengan string 'tshirt', 'hoodie', 'mug', atau 'topi'
-                $query = mysqli_query($koneksi, "SELECT * FROM produk WHERE kategori='$kategori_aktif'");
-                
-                if (mysqli_num_rows($query) > 0) {
-                    while ($row = mysqli_fetch_assoc($query)) {
-                ?>
-                    <div class="product-card">
-                        <!-- Gambar dinamis dari folder assets/img/ -->
-                        <img src="../assets/img/<?php echo $row['gambar']; ?>" alt="<?php echo htmlspecialchars($row['nama_produk']); ?>">
-                        
-                        <div>
-                            <div class="product-name"><?php echo htmlspecialchars($row['nama_produk']); ?></div>
-                            <div class="product-price">RP <?php echo number_format($row['harga'], 0, ',', '.'); ?></div>   
-                                                                                                              
+           <div class="products-grid">
+    <?php
+    // Ambil data produk berdasarkan kategori
+    $query = mysqli_query($koneksi, "SELECT * FROM produk WHERE kategori='$kategori_aktif'");
+    
+    if (mysqli_num_rows($query) > 0) {
+    while ($row = mysqli_fetch_assoc($query)) {
+    ?>
+        <!-- Kartu Produk Dinamis -->
+        <div class="product-card">
+            <!-- Link gambar menuju ke halaman detail produk sesuai ID-nya -->
+            <a href="detail_produk.php?id=<?php echo $row['id_produk']; ?>">
+                <img src="../assets/img/<?php echo $row['gambar']; ?>"
+                    alt="<?php echo htmlspecialchars($row['nama_produk']); ?>">
+            </a>
+            <!-- Detail Teks Nama & Harga -->
+            <div>
+                <a href="detail_produk.php?id=<?php echo $row['id_produk']; ?>" style="text-decoration: none;">
+                    <div class="product-name">
+                        <?php echo htmlspecialchars($row['nama_produk']); ?>
+                    </div>
+                </a>
+                <div class="product-price">RP
+                    <?php echo number_format($row['harga'], 0, ',', '.'); ?>
+                </div>
+            </div>
+            <!-- Footer Kartu: Rating & Tombol Masuk Keranjang -->
+            <div class="product-footer">
+                <span class="rating">⭐⭐⭐⭐⭐</span>
+                <!-- Terintegrasi ke file tambah_cart.php dengan membawa ID parameter produk -->
+                <a href="tambah_cart.php?id=<?php echo $row['id_produk']; ?>&qty=1" class="buy-link">🛒</a>
+            </div>
+        </div>
+    <?php
+    }
+} else {
+    // Teks pemberitahuan jika tabel produk di database phpMyAdmin Anda masih kosong
+    echo "<p style='color: #666; font-size: 0.9rem; grid-column: span 4; text-align: center; padding: 20px 0;'>
+        Belum ada data produk di database. Silakan tambah data melalui panel Admin.
+      </p>";
+}
+?>
+</div>

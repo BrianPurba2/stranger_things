@@ -1,7 +1,5 @@
 <?php
-// Memulai session untuk menyimpan status login admin
-session_start();
-
+session_start(); // Wajib di baris paling atas
 // Menghubungkan ke database (keluar folder 'admin' dulu baru masuk ke 'config')
 include "../config/koneksi.php";
 
@@ -10,20 +8,19 @@ if (isset($_POST['login_admin'])) {
     $username = mysqli_real_escape_string($koneksi, $_POST['username']);
     $password = mysqli_real_escape_string($koneksi, $_POST['password']);
 
-    // Mengambil data dari tabel admin (Pastikan Anda memiliki tabel bernama 'admin' dengan kolom username & password)
+    // Mengambil data dari tabel admin
     $query = mysqli_query($koneksi, "SELECT * FROM admin WHERE username='$username' AND password='$password'");
 
     if (mysqli_num_rows($query) === 1) {
         $data = mysqli_fetch_assoc($query);
 
-        // Menyimpan status login admin ke dalam session terpisah agar aman
-        $_SESSION['admin_logged'] = true;
-        $_SESSION['admin_username'] = $data['username'];
+        // --- DISAMAKAN KUNCI SESSION-NYA DI SINI ---
+        $_SESSION['username'] = $data['username']; // Diubah dari admin_username menjadi username
 
         // Alihkan halaman ke dashboard admin setelah sukses login
         echo "<script>
                 alert('Login Berhasil! Selamat datang Admin.');
-                window.location.href = 'dashboard.php';
+                window.location.href = 'admin_home.php';
               </script>";
         exit;
     } else {
@@ -39,7 +36,7 @@ if (isset($_POST['login_admin'])) {
     <title>Admin Login - Stranger Merch Store</title>
     <!-- Font Roboto & Font Awesome untuk Ikon -->
     <link href="https://googleapis.com" rel="stylesheet">
-    <link rel="stylesheet" href="https://cloudflare.com">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Pinyon+Script&display=swap">
     
     <style>
         * {
@@ -52,7 +49,7 @@ if (isset($_POST['login_admin'])) {
         body {
             /* Latar belakang menggunakan gambar badai merah kota Hawkins milik Anda */
             background: linear-gradient(rgba(0, 0, 0, 0.4), rgba(0, 0, 0, 0.5)),
-                url('../assets/img/bg register.png') no-repeat center center;
+                url('../assets/img/bgloginadmin.png') no-repeat center center;
             background-size: cover;
             min-height: 100vh;
             display: flex;
@@ -82,61 +79,55 @@ if (isset($_POST['login_admin'])) {
         .back-top-btn:hover {
             color: #ff0000;
         }
-
         /* ==================== STRANGER LOGO STYLE ==================== */
         .stranger-logo {
             display: flex;
             flex-direction: column;
             align-items: center;
             text-transform: uppercase;
-            margin-bottom: 30px;
+            margin-bottom: 35px;
             user-select: none;
-        }
+            font-family: 'Cinzel Decorative', 'Georgia', serif; /* Font serif tegas bergaya retro/gothic */
+            text-align: center;
+        }       
 
+        /* Mengatur baris pertama (STRANGER) dan baris kedua (MERCH STORE) */
         .brand-row-1, .brand-row-2 {
-            display: flex;
-            align-items: flex-start;
-            justify-content: center;
+            display: block;
             position: relative;
-        }
-
-        .giant-char, .normal-char, .giant-char-2, .normal-char-2 {
             color: transparent;
-            -webkit-text-stroke: 1.8px #ff0000;
-            text-shadow: 0 0 8px rgba(255, 0, 0, 0.6);
+            -webkit-text-stroke: 1.5px #e50914; /* Merah khas Netflix */
+            text-shadow: 0 0 10px rgba(229, 9, 20, 0.7), 0 0 20px rgba(229, 9, 20, 0.4);
             font-weight: 900;
-            letter-spacing: -1px;
-        }
+        }       
 
-        .brand-row-1 .giant-char { font-size: 3.8rem; line-height: 0.8; }
-        .brand-row-1 .normal-char { font-size: 2.4rem; line-height: 0.9; margin-top: -1px; }
+        /* Baris Pertama: STRANGER */
+        .brand-row-1 {
+            font-size: 6.4rem;
+            line-height: 1;
+            letter-spacing: 6px;
+            padding: 0 15px;
+        }       
 
+        /* Garis merah panjang di atas tulisan STRANGER */
         .brand-row-1::before {
             content: "";
             position: absolute;
-            top: 4px; 
-            left: 12%; 
-            right: 12%;
-            height: 2.5px;
-            background-color: #ff0000;
-            box-shadow: 0 0 6px rgba(255, 0, 0, 0.8);
-        }
+            top: -4px; 
+            left: 5px; 
+            right: -2px;
+            height: 5px;
+            background-color: #e50914;
+            box-shadow: 0 0 8px rgba(229, 9, 20, 0.8);
+        }       
 
-        .brand-row-2 { margin-top: -6px; }
-        .brand-row-2 .giant-char-2 { font-size: 3.4rem; line-height: 0.8; }
-        .brand-row-2 .normal-char-2 { font-size: 2.1rem; line-height: 0.9; word-spacing: 6px; }
-
-        .brand-row-2::before, .brand-row-2::after {
-            content: "";
-            position: absolute;
-            top: 5px;
-            width: 18px;
-            height: 2.5px;
-            background-color: #ff0000;
-            box-shadow: 0 0 6px rgba(255, 0, 0, 0.8);
+        /* Baris Kedua: MERCH STORE */
+        .brand-row-2 {
+            font-size: 3.8rem;
+            line-height: 1;
+            letter-spacing: 4px;
+            margin-top: 5px; /* Jarak aman antar baris agar tidak tabrakan */
         }
-        .brand-row-2::before { left: 4%; }
-        .brand-row-2::after { right: 4%; }
 
         /* ==================== BOX ADMIN LOGIN ==================== */
         .login-box {
@@ -234,21 +225,12 @@ if (isset($_POST['login_admin'])) {
 
     <!-- TOMBOL KEMBALI KE LOGIN USER -->
     <a href="../auth/login.php" class="back-top-btn">
-        <i class="fa-solid fa-caret-left"></i> Back
+        <i class="fa-solid fa-caret-left"></i> ◀ Back
     </a>
-
-    <!-- LOGO STRANGER MERCH STORE -->
+    
     <div class="stranger-logo">
-        <div class="brand-row-1">
-            <span class="giant-char">S</span>
-            <span class="normal-char">tranger</span>
-            <span class="giant-char">R</span>
-        </div>
-        <div class="brand-row-2">
-            <span class="giant-char-2">M</span>
-            <span class="normal-char-2">erch store</span>
-            <span class="giant-char-2">E</span>
-        </div>
+    <div class="brand-row-1">Stranger</div>
+    <div class="brand-row-2">Merch Store</div>
     </div>
 
     <!-- BOX FORM LOGIN ADMIN -->
@@ -272,7 +254,7 @@ if (isset($_POST['login_admin'])) {
             </div>
 
             <!-- Tombol Kirim Form -->
-            <button type="submit" name="login_admin" class="login-btn">Login to System</button>
+            <button type="submit" name="login_admin" class="login-btn">Login</button>
         </form>
     </div>
 

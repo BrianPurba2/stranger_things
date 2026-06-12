@@ -1,17 +1,13 @@
 <?php
-// 1. Memulai session untuk mengecek login user
 session_start();
 
-// 2. Proteksi Halaman: Jika belum login, kembalikan ke halaman login
 if (!isset($_SESSION['username'])) {
     header("Location: ../auth/login.php");
     exit;
 }
 
-// 3. Hubungkan ke database
 include "../config/koneksi.php";
 
-// 4. Tangkap ID Produk dari URL, jika tidak ada kembali ke halaman produk
 if (!isset($_GET['id']) || empty($_GET['id'])) {
     header("Location: produk.php");
     exit;
@@ -19,356 +15,518 @@ if (!isset($_GET['id']) || empty($_GET['id'])) {
 
 $id_produk = mysqli_real_escape_string($koneksi, $_GET['id']);
 
-// 5. Ambil data spesifik produk berdasarkan ID dari database
-// Catatan: Pastikan nama tabel di database Anda adalah 'produk' dan primary key-nya 'id_produk'
 $query = mysqli_query($koneksi, "SELECT * FROM produk WHERE id_produk='$id_produk'");
 
-// Jika produk tidak ditemukan di database
-if (mysqli_num_rows($query) === 0) {
-    echo "<script>alert('Produk tidak ditemukan!'); window.location.href='produk.php';</script>";
+if (mysqli_num_rows($query) == 0) {
+    echo "<script>alert('Produk tidak ditemukan!');window.location='produk.php';</script>";
     exit;
 }
 
-$row = mysqli_fetch_assoc($query);
-
-// Menentukan teks breadcrumb berdasarkan kategori produk secara dinamis
-$kategori_label = "";
-if (isset($row['kategori'])) {
-    if (strtolower($row['kategori']) == 'tshirt')
-        $kategori_label = "T-Shirt";
-    else if (strtolower($row['kategori']) == 'hoodie')
-        $kategori_label = "Hoodie";
-    else if (strtolower($row['kategori']) == 'mug')
-        $kategori_label = "Mug";
-    else if (strtolower($row['kategori']) == 'topi')
-        $kategori_label = "Topi";
-    else
-        $kategori_label = ucfirst($row['kategori']);
-}
+$produk = mysqli_fetch_assoc($query);
 ?>
+
 <!DOCTYPE html>
 <html lang="id">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Detail <?php echo htmlspecialchars($row['nama_produk']); ?> - Stranger Merch Store</title>
-    <link href="https://googleapis.com" rel="stylesheet">
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Roboto', sans-serif;
-        }
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-        body {
-            background-color: #0b0b0b;
-            color: #ffffff;
-            padding: 20px;
-            display: flex;
-            justify-content: center;
-        }
+<title>
+    Detail <?php echo htmlspecialchars($produk['nama_produk']); ?>
+</title>
 
-        .container {
-            width: 100%;
-            max-width: 1200px;
-            background-color: #000000;
-            border: 1px solid #333;
-            padding: 20px;
-        }
+<style>
 
-        /* ==================== NAVBAR ==================== */
-        header {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-bottom: 25px;
-            border-bottom: 1px solid #1a1a1a;
-            margin-bottom: 20px;
-        }
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:Arial, sans-serif;
+}
 
-        .mini-logo {
-            color: #ff0000;
-            font-weight: 900;
-            font-size: 1.2rem;
-            line-height: 1;
-            text-transform: uppercase;
-            text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
-        }
+body{
+    background:#0b0b0b;
+    color:white;
+    padding:20px;
+}
 
-        nav ul {
-            display: flex;
-            list-style: none;
-            gap: 25px;
-        }
+.container{
+    max-width:1200px;
+    margin:auto;
+    background:#000;
+    padding:25px;
+}
 
-        nav ul li a {
-            text-decoration: none;
-            color: #bbbbbb;
-            font-size: 0.9rem;
-            font-weight: bold;
-            transition: color 0.3s;
-        }
+header{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    margin-bottom:30px;
+}
 
-        nav ul li a:hover, nav ul li a.active {
-            color: #ff0000;
-        }
+.mini-logo{
+    color:#ff4500;
+    font-size:28px;
+    font-weight:bold;
+    line-height:1.1;
+}
 
-        .user-menu {
-            display: flex;
-            align-items: center;
-            gap: 20px;
-            font-size: 0.9rem;
-        }
+nav ul{
+    list-style:none;
+    display:flex;
+    gap:20px;
+}
 
-        .cart-icon {
-            text-decoration: none;
-            color: #fff;
-            font-size: 1.2rem;
-        }
+nav a{
+    color:#ccc;
+    text-decoration:none;
+}
 
-        /* ==================== BREADCRUMB NAVIGATION ==================== */
-        .breadcrumb {
-            font-size: 0.85rem;
-            color: #888888;
-            margin-bottom: 30px;
-            display: flex;
-            gap: 8px;
-            align-items: center;
-        }
+nav a.active{
+    color:#ff4500;
+}
 
-        .breadcrumb a {
-            color: #888888;
-            text-decoration: none;
-            transition: color 0.2s;
-        }
+.user-menu{
+    display:flex;
+    gap:20px;
+    align-items:center;
+}
 
-        .breadcrumb a:hover {
-            color: #ffffff;
-        }
+.cart-icon{
+    color:white;
+    text-decoration:none;
+}
 
-        .breadcrumb span.separator {
-            color: #444444;
-        }
+.breadcrumb{
+    margin-bottom:30px;
+    color:#999;
+}
 
-        .breadcrumb span.current {
-            color: #aaaaaa;
-        }
+.breadcrumb a{
+    color:#999;
+    text-decoration:none;
+}
 
-        /* ==================== DETAIL CONTENT LAYOUT ==================== */
-        .detail-layout {
-            display: flex;
-            gap: 40px;
-            margin-bottom: 40px;
-        }
+.detail-layout{
+    display:flex;
+    gap:60px;
+    align-items:flex-start;
+}
 
-        /* Bagian Kiri: Gambar Produk */
-        .image-section {
-            width: 40%;
-            display: flex;
-            flex-direction: column;
-            justify-content: flex-start;
-        }
+.product-image{
+    width:40%;
+}
 
-        .image-box {
-            border: 1px solid #ff0000;
-            border-radius: 15px;
-            padding: 25px;
-            background-color: #050505;
-            box-shadow: 0 0 15px rgba(255, 0, 0, 0.1);
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            height: 380px;
-        }
+.image-box{
+    border:1px solid #ff4500;
+    border-radius:15px;
+    padding:25px;
+    text-align:center;
+}
 
-        .image-box img {
-            max-width: 100%;
-            max-height: 100%;
-            object-fit: contain;
-        }
+.image-box img{
+    width:100%;
+    max-width:300px;
+    height:auto;
+}
 
-        /* Bagian Kanan: Informasi Produk */
-        .info-section {
-            width: 60%;
-            display: flex;
-            flex-direction: column;
-            gap: 15px;
-        }
+.back-btn{
+    display:inline-block;
+    margin-top:20px;
+    text-decoration:none;
+    color:white;
+}
 
-        .product-title {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #ffffff;
-            letter-spacing: 0.5px;
-        }
+.back-btn:hover{
+    color:#ff4500;
+}
 
-        .product-price {
-            font-size: 1.4rem;
-            color: #ff0000;
-            font-weight: 700;
-            letter-spacing: 0.5px;
-        }
+.product-info{
+    width:60%;
+}
 
-        .rating-box {
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            font-size: 0.85rem;
-            color: #ffaa00;
-        }
+.product-info h1{
+    font-size:42px;
+    margin-bottom:10px;
+}
 
-        .rating-count {
-            color: #666666;
-        }
+.price{
+    font-size:34px;
+    color:#ff4500;
+    font-weight:bold;
+    margin-bottom:15px;
+}
 
-        .stock-status {
-            font-size: 0.85rem;
-            color: #4caf50; /* Warna hijau indikator stok tersedia */
-            font-weight: 500;
-        }
+.rating{
+    color:gold;
+    margin-bottom:15px;
+}
 
-        .product-description {
-            font-size: 0.9rem;
-            color: #bbbbbb;
-            line-height: 1.5;
-            margin-top: 5px;
-            margin-bottom: 10px;
-        }
+.stock{
+    color:#00cc00;
+    font-weight:bold;
+    margin-bottom:15px;
+}
 
-        .spec-item {
-            font-size: 0.9rem;
-            color: #ffffff;
-            margin-bottom: 5px;
-        }
+.description{
+    color:#ddd;
+    line-height:1.6;
+    margin-bottom:20px;
+}
 
-        .spec-label {
-            display: block;
-            font-size: 0.9rem;
-            color: #888888;
-            margin-bottom: 5px;
-        }
+.spec-label{
+    margin-bottom:10px;
+    font-weight:bold;
+}
 
-        /* Form Kuantitas Jumlah Barang */
-        .qty-title {
-            font-size: 0.9rem;
-            color: #888888;
-            margin-bottom: 5px;
-        }
+.size-options{
+    display:flex;
+    gap:10px;
+    margin-bottom:25px;
+}
 
-        .quantity-control {
-            display: flex;
-            align-items: center;
-            gap: 0;
-            margin-bottom: 25px;
-        }
+.size-options input{
+    display:none;
+}
 
-        .qty-btn {
-            background-color: transparent;
-            border: 1px solid #333333;
-            color: #ffffff;
-            width: 40px;
-            height: 35px;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.2s;
-        }
+.size-options span{
+    display:inline-block;
+    width:45px;
+    height:35px;
+    line-height:35px;
+    text-align:center;
+    border:1px solid #555;
+    border-radius:8px;
+    cursor:pointer;
+}
 
-        .qty-btn:hover {
-            border-color: #ff0000;
-            color: #ff0000;
-        }
+.size-options input:checked + span{
+    border-color:#ff4500;
+    background:#1a1a1a;
+}
 
-        .qty-btn.minus {
-            border-top-left-radius: 5px;
-            border-bottom-left-radius: 5px;
-        }
+.qty-title{
+    margin-bottom:10px;
+}
 
-        .qty-btn.plus {
-            border-top-right-radius: 5px;
-            border-bottom-right-radius: 5px;
-        }
+.quantity-control{
+    display:flex;
+    margin-bottom:25px;
+}
 
-        .qty-input {
-            width: 60px;
-            height: 35px;
-            background-color: transparent;
-            border-top: 1px solid #333333;
-            border-bottom: 1px solid #333333;
-            border-left: none;
-            border-right: none;
-            color: #ffffff;
-            text-align: center;
-            font-size: 0.9rem;
-            outline: none;
-        }
+.qty-btn{
+    width:45px;
+    height:40px;
+    border:1px solid #555;
+    background:#111;
+    color:white;
+    cursor:pointer;
+    font-size:18px;
+}
 
-        /* Tombol Tambah ke Keranjang */
-        .add-to-cart-btn {
-            width: 100%;
-            max-width: 320px;
-            background-color: #b71c1c;
-            color: #ffffff;
-            border: none;
-            border-radius: 5px;
-            padding: 12px 20px;
-            font-size: 0.95rem;
-            font-weight: 700;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            transition: background-color 0.2s;
-        }
+.qty-input{
+    width:60px;
+    text-align:center;
+    background:#111;
+    color:white;
+    border:1px solid #555;
+}
 
-        .add-to-cart-btn:hover {
-            background-color: #ff0000;
-        }
+.add-to-cart-btn{
+    background:#d52b00;
+    color:white;
+    border:none;
+    padding:15px 25px;
+    font-size:16px;
+    font-weight:bold;
+    border-radius:5px;
+    cursor:pointer;
+    min-width:300px;
+}
 
-        .back-btn {
-            display: inline-block;
-            text-decoration: none;
-            color: #ffffff;
-            font-size: 0.9rem;
-            transition: color 0.2s;
-            margin-top: 20px;
-        }
+.add-to-cart-btn:hover{
+    background:#ff4500;
+}
 
-        .back-btn:hover {
-            color: #ff0000;
-        }
-    </style>
+/* Container Utama Menu Profil */
+.user-profile-nav {
+    position: relative;
+    display: inline-block;
+    cursor: pointer;
+}
+
+.profile-trigger {
+    color: #ffffff;
+    font-size: 14px;
+    padding: 5px 10px;
+    border-radius: 4px;
+    transition: background 0.2s;
+}
+
+.profile-trigger:hover {
+    background-color: #1a1a1e;
+}
+
+/* Kotak Dropdown Pilihan Menu Akun */
+.profile-dropdown {
+    display: none; /* Tersembunyi secara default */
+    position: absolute;
+    right: 0;
+    top: 100%;
+    background-color: #1a1a1e;
+    min-width: 160px;
+    border: 1px solid #3f3f46;
+    border-radius: 6px;
+    box-shadow: 0px 8px 16px rgba(0,0,0,0.6);
+    z-index: 9999;
+    padding: 5px 0;
+    margin-top: 5px;
+}
+
+/* Memunculkan dropdown saat teks nama didekati kursor */
+.user-profile-nav:hover .profile-dropdown {
+    display: block;
+}
+
+/* Gaya Teks di Dalam Dropdown */
+.dropdown-header {
+    padding: 8px 15px;
+    font-size: 11px;
+    color: #71717a;
+    text-transform: uppercase;
+    font-weight: bold;
+}
+
+.dropdown-link {
+    color: #ffffff;
+    padding: 10px 15px;
+    text-decoration: none;
+    display: block;
+    font-size: 13px;
+    transition: background-color 0.2s, color 0.2s;
+}
+
+.dropdown-link:hover {
+    background-color: #2e2e35;
+    color: #ff4a1c;
+}
+
+.dropdown-divider {
+    height: 1px;
+    background-color: #3f3f46;
+    margin: 5px 0;
+}
+
+.text-danger {
+    color: #ff4444 !important;
+}
+
+.nav-right-group {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    font-size: 0.9rem;
+}
+.cart-icon {
+    text-decoration: none;
+    color: #fff;
+    font-size: 1.2rem;
+}
+</style>
 </head>
 <body>
 
 <div class="container">
-    
-    <!-- NAVBAR -->
-    <header>
-        <div class="mini-logo">Stranger<br>Merch Store</div>
-        <nav>
-            <ul>
-                <li><a href="home.php">HOME</a></li>
-                <li><a href="produk.php" class="active">PRODUK</a></li>
-                <li><a href="riwayat.php">RIWAYAT PEMESANAN</a></li>
-            </ul>
-        </nav>
-        <div class="user-menu">
-            <a href="cart.php" class="cart-icon">🛒</a>
-            <span>👤 Hi, <?php echo htmlspecialchars($_SESSION['username']); ?> ▼</span>
-        </div>
-    </header>
 
-    <!-- BREADCRUMB NAVIGATION -->
-    <div class="breadcrumb">
-        <a href="home.php">Home</a>
-        <span class="separator">⟩</span>
-        <a href="produk.php?kategori=<?php echo urlencode($row['kategori']); ?>"><?php echo $kategori_label; ?></a>
-        <span class="separator">⟩</span>
-        <span class="current"><?php echo htmlspecialchars($row['nama_produk']); ?></span>
+<header>
+
+    <div class="mini-logo">
+        Stranger<br>Merch Store
     </div>
 
-    <!-- MAIN DETAIL LAYOUT -->
+    <nav>
+        <ul>
+            <li><a href="home.php">HOME</a></li>
+            <li><a href="produk.php" class="active">PRODUK</a></li>
+            <li><a href="riwayat.php">RIWAYAT PEMESANAN</a></li>
+        </ul>
+    </nav>
+
+    <div class="nav-right-group">
+        <a href="cart.php" class="cart-icon">🛒</a>
+        <div class="user-profile-nav">
+    <!-- Teks sapaan yang ada ikon profilnya -->
+    <div class="profile-trigger">
+        👤 &nbsp; Hi, <?php echo $_SESSION['username']; ?>
+            </div>
+        
+            <!-- Menu Pilihan Akun (Muncul Saat Di-hover/Disentuh) -->
+            <div class="profile-dropdown">
+                <div class="dropdown-header">Beralih Akun:</div>
+                <a href="../auth/login.php" class="dropdown-link">▶ Pelanggan / User</a>
+                <a href="../admin/login_admin.php" class="dropdown-link">▶ Halaman Admin</a>
+                <div class="dropdown-divider"></div>
+                <a href="../auth/logout.php" class="dropdown-link text-danger">🚪 Keluar (Logout)</a>
+            </div>
+        </div>
+
+</header>
+
+<div class="breadcrumb">
+    <a href="home.php">Home</a>
+    >
+    <a href="produk.php">Produk</a>
+    >
+    <?php echo htmlspecialchars($produk['nama_produk']); ?>
+</div>
+
+<div class="detail-layout">
+
+    <div class="product-image">
+
+        <div class="image-box">
+            <img src="../assets/img/<?php echo $produk['gambar']; ?>"
+                 alt="<?php echo htmlspecialchars($produk['nama_produk']); ?>">
+        </div>
+
+        <a href="produk.php" class="back-btn">
+            ◀ Back
+        </a>
+
+    </div>
+
+    <div class="product-info">
+
+        <h1>
+            <?php echo htmlspecialchars($produk['nama_produk']); ?>
+        </h1>
+
+        <div class="price">
+            RP <?php echo number_format($produk['harga'], 0, ',', '.'); ?>
+        </div>
+
+        <div class="rating">
+            ⭐⭐⭐⭐⭐ (100)
+        </div>
+
+        <div class="stock">
+            Stock Tersedia
+        </div>
+
+        <div class="description">
+            <?php echo htmlspecialchars($produk['deskripsi']); ?>
+        </div>
+
+        <form action="tambah_cart.php" method="GET">
+
+            <input type="hidden"
+                   name="id_produk"
+                   value="<?php echo $produk['id_produk']; ?>">
+
+            <?php
+            $kategori = strtolower($produk['kategori']);
+
+            if ($kategori == 't-shirt' || $kategori == 'hoodie' || $kategori == 'topi') {
+                ?>
+                    <div class="spec-label">Ukuran</div>
+
+                    <div class="size-options">
+
+                        <label>
+                            <input type="radio" name="ukuran" value="S" checked>
+                            <span>S</span>
+                        </label>
+
+                        <label>
+                            <input type="radio" name="ukuran" value="M">
+                            <span>M</span>
+                        </label>
+
+                        <label>
+                            <input type="radio" name="ukuran" value="L">
+                            <span>L</span>
+                        </label>
+
+                        <label>
+                            <input type="radio" name="ukuran" value="XL">
+                            <span>XL</span>
+                        </label>
+
+                        <label>
+                            <input type="radio" name="ukuran" value="XXL">
+                            <span>XXL</span>
+                        </label>
+
+                    </div>
+            <?php } ?>
+            <?php
+            if($kategori == 'mug'){
+            ?>
+                <div class="spec-label">Ukuran</div>
+
+                <div style="margin-bottom:20px;">
+                    20 cm x 9 cm
+                </div>
+            <?php
+            }
+            ?>
+
+            <div class="qty-title">
+                Jumlah
+            </div>
+
+            <div class="quantity-control">
+
+                <button type="button"
+                        class="qty-btn"
+                        id="minus">
+                    -
+                </button>
+
+                <input type="text"
+                       id="qty"
+                       name="qty"
+                       class="qty-input"
+                       value="1"
+                       readonly>
+
+                <button type="button"
+                        class="qty-btn"
+                        id="plus">
+                    +
+                </button>
+
+            </div>
+
+            <button type="submit" class="add-to-cart-btn">
+                🛒 TAMBAH KE KERANJANG
+            </button>
+
+        </form>
+
+    </div>
+
+</div>
+
+</div>
+
+<script>
+
+const minusBtn = document.getElementById('minus');
+const plusBtn = document.getElementById('plus');
+const qtyInput = document.getElementById('qty');
+
+plusBtn.addEventListener('click', function(){
+    qtyInput.value = parseInt(qtyInput.value) + 1;
+});
+
+minusBtn.addEventListener('click', function(){
+    if(parseInt(qtyInput.value) > 1){
+        qtyInput.value = parseInt(qtyInput.value) - 1;
+    }
+});
+
+</script>
+
+</body>
+</html>

@@ -196,13 +196,13 @@ $status_aktif = isset($_GET['status']) ? mysqli_real_escape_string($koneksi, $_G
 
         .prod-mini-img {
             width: 50px;
-            height: 50px;
+            height: 100px;
             background-color: #111;
             border-radius: 6px;
             display: flex;
             justify-content: center;
             align-items: center;
-            padding: 3px;
+            padding: -30px;
             flex-shrink: 0;
         }
 
@@ -215,7 +215,7 @@ $status_aktif = isset($_GET['status']) ? mysqli_real_escape_string($koneksi, $_G
         .prod-mini-details {
             display: flex;
             flex-direction: column;
-            gap: 2px;
+            gap: 5px;
             overflow: hidden;
         }
 
@@ -240,6 +240,91 @@ $status_aktif = isset($_GET['status']) ? mysqli_real_escape_string($koneksi, $_G
             margin-top: 15px;
         }
         .back-btn:hover { color: #ff0000; }
+
+        /* Container Utama Menu Profil */
+        .user-profile-nav {
+            position: relative;
+            display: inline-block;
+            cursor: pointer;
+        }
+
+        .profile-trigger {
+            color: #ffffff;
+            font-size: 14px;
+            padding: 5px 10px;
+            border-radius: 4px;
+            transition: background 0.2s;
+        }
+
+        .profile-trigger:hover {
+            background-color: #1a1a1e;
+        }
+
+        /* Kotak Dropdown Pilihan Menu Akun */
+        .profile-dropdown {
+            display: none; /* Tersembunyi secara default */
+            position: absolute;
+            right: 0;
+            top: 100%;
+            background-color: #1a1a1e;
+            min-width: 160px;
+            border: 1px solid #3f3f46;
+            border-radius: 6px;
+            box-shadow: 0px 8px 16px rgba(0,0,0,0.6);
+            z-index: 9999;
+            padding: 5px 0;
+            margin-top: 5px;
+        }
+
+        /* Memunculkan dropdown saat teks nama didekati kursor */
+        .user-profile-nav:hover .profile-dropdown {
+            display: block;
+        }
+
+        /* Gaya Teks di Dalam Dropdown */
+        .dropdown-header {
+            padding: 8px 15px;
+            font-size: 11px;
+            color: #71717a;
+            text-transform: uppercase;
+            font-weight: bold;
+        }
+
+        .dropdown-link {
+            color: #ffffff;
+            padding: 10px 15px;
+            text-decoration: none;
+            display: block;
+            font-size: 13px;
+            transition: background-color 0.2s, color 0.2s;
+        }
+
+        .dropdown-link:hover {
+            background-color: #2e2e35;
+            color: #ff4a1c;
+        }
+
+        .dropdown-divider {
+            height: 1px;
+            background-color: #3f3f46;
+            margin: 5px 0;
+        }
+
+        .text-danger {
+            color: #ff4444 !important;
+        }
+
+        .nav-right-group {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+            font-size: 0.9rem;
+        }
+        .cart-icon {
+            text-decoration: none;
+            color: #fff;
+            font-size: 1.2rem;
+        }
     </style>
 </head>
 <body>
@@ -256,9 +341,22 @@ $status_aktif = isset($_GET['status']) ? mysqli_real_escape_string($koneksi, $_G
                 <li><a href="riwayat.php" class="active">RIWAYAT PEMESANAN</a></li>
             </ul>
         </nav>
-        <div class="user-menu">
+        <div class="nav-right-group">
             <a href="cart.php" class="cart-icon">🛒</a>
-            <span>👤 Hi, <?php echo htmlspecialchars($username_aktif); ?> ▼</span>
+            <div class="user-profile-nav">
+        <!-- Teks sapaan yang ada ikon profilnya -->
+        <div class="profile-trigger">
+            👤 &nbsp; Hi, <?php echo $_SESSION['username']; ?>
+        </div>
+        
+        <!-- Menu Pilihan Akun (Muncul Saat Di-hover/Disentuh) -->
+        <div class="profile-dropdown">
+            <div class="dropdown-header">Beralih Akun:</div>
+            <a href="../auth/login.php" class="dropdown-link">▶ Pelanggan / User</a>
+            <a href="../admin/login_admin.php" class="dropdown-link">▶ Halaman Admin</a>
+            <div class="dropdown-divider"></div>
+            <a href="../auth/logout.php" class="dropdown-link text-danger">🚪 Keluar (Logout)</a>
+        </div>
         </div>
     </header>
 
@@ -286,12 +384,112 @@ $status_aktif = isset($_GET['status']) ? mysqli_real_escape_string($koneksi, $_G
         }
 
         $query_invoice = mysqli_query($koneksi, $query_str);
-
         if (mysqli_num_rows($query_invoice) > 0) {
+
             while ($invoice = mysqli_fetch_assoc($query_invoice)) {
+
                 $id_invoice = $invoice['id_pesanan'];
-                
-                // Format nomor Order ID cantik berurutan (Contoh: #ORD-0001)
-                $order_id_formatted = "#ORD-" . str_pad($id_invoice, 4, "0", STR_PAD_LEFT);
+
+                $order_id_formatted =
+                    "#ORD-" . str_pad($id_invoice, 4, "0", STR_PAD_LEFT);
+
+                ?>
+
+                <div class="order-card">
+
+                    <div class="order-info-side">
+
+                        <div class="order-id-label">
+                            Order ID
+                        </div>
+
+                        <div class="order-id-num">
+                            <?php echo $order_id_formatted; ?>
+                        </div>
+
+                        <div class="order-date-title">
+                            Tanggal Pesan
+                        </div>
+
+                        <div class="order-date-value">
+                            <?php echo $invoice['tanggal']; ?>
+                        </div>
+
+                        <div class="order-total-price">
+                            Rp <?php echo number_format($invoice['total_harga'], 0, ',', '.'); ?>
+                        </div>
+
+                        <div style="margin-top:10px;">
+                            Status:
+                            <b><?php echo $invoice['status']; ?></b>
+                        </div>
+
+                    </div>
+
+                    <div class="order-products-side">
+
+                        <?php
+
+                        $id_pesanan = $invoice['id_pesanan'];
+
+                        $detail = mysqli_query(
+                            $koneksi,
+                            "SELECT dp.*, p.nama_produk, p.gambar
+                     FROM detail_pesanan dp
+                     JOIN produk p
+                     ON dp.id_produk = p.id_produk
+                     WHERE dp.id_pesanan='$id_pesanan'"
+                        );
+
+                        while ($produk = mysqli_fetch_assoc($detail)) {
+
+                            ?>
+
+                                <div class="prod-mini-item">
+
+                                    <div class="prod-mini-img">
+                                        <img src="../assets/img/<?php echo $produk['gambar']; ?>">
+                                    </div>
+
+                                    <div class="prod-mini-details">
+
+                                        <div class="prod-mini-name">
+                                            <?php echo $produk['nama_produk']; ?>
+                                        </div>
+
+                                        <div class="prod-mini-spec">
+                                            Ukuran :
+                                            <?php echo $produk['ukuran']; ?>
+                                        </div>
+
+                                        <div class="prod-mini-spec">
+                                            Jumlah :
+                                            <?php echo $produk['qty']; ?>
+                                        </div>
+
+                                        <div class="prod-mini-price">
+                                            Rp <?php echo number_format($produk['harga_satuan'], 0, ',', '.'); ?>
+                                        </div>
+
+                                    </div>
+
+                                </div>
+
+                        <?php } ?>
+
+                    </div>
+
+                </div>
+
+                <?php
             }
-        }
+
+        } else {
+
+            echo "
+    <div style='padding:30px;text-align:center'>
+        Belum ada riwayat pesanan
+    </div>
+    ";
+
+    }
